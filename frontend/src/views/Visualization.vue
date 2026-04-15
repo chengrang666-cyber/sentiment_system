@@ -1,125 +1,75 @@
 <template>
-  <div class="space-y-8">
-    <!-- 可视化配置卡片 -->
-    <div class="bg-white rounded-lg shadow-md p-8">
-      <h2 class="text-2xl font-semibold mb-6 text-primary">可视化展示</h2>
-      
-      <!-- 可视化配置 -->
-      <div class="mb-8">
-        <h3 class="text-lg font-semibold mb-4">可视化配置</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-gray-700 mb-2">选择分析任务</label>
-            <select 
-              v-model="selectedTask" 
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">请选择分析任务</option>
-              <option v-for="task in tasks" :key="task.id" :value="task.id">
-                {{ task.id }} - {{ task.platform }} - {{ task.keywords }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-gray-700 mb-2">时间范围</label>
-            <select 
-              v-model="timeRange" 
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="day">按天</option>
-              <option value="week">按周</option>
-              <option value="month">按月</option>
-            </select>
-          </div>
+  <div class="space-y-6">
+    <!-- 实时舆情监控大屏标题 -->
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-blue-400">实时舆情监控大屏</h2>
+      <div class="flex items-center space-x-4">
+        <select class="bg-gray-800 text-white border border-gray-700 rounded px-3 py-1">
+          <option>--全部任务--</option>
+        </select>
+        <button class="bg-gray-800 text-white border border-gray-700 rounded px-3 py-1 hover:bg-gray-700 transition-colors">
+          刷新
+        </button>
+      </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- 总任务数 -->
+      <div class="bg-gray-800 rounded-lg border border-gray-700 p-4">
+        <h3 class="text-sm text-gray-400 mb-1">总任务数</h3>
+        <p class="text-2xl font-bold text-white">1</p>
+      </div>
+      <!-- 采集评论数 -->
+      <div class="bg-gray-800 rounded-lg border border-gray-700 p-4">
+        <h3 class="text-sm text-gray-400 mb-1">采集评论数</h3>
+        <p class="text-2xl font-bold text-green-400">5</p>
+      </div>
+      <!-- 已分析数 -->
+      <div class="bg-gray-800 rounded-lg border border-gray-700 p-4">
+        <h3 class="text-sm text-gray-400 mb-1">已分析数</h3>
+        <p class="text-2xl font-bold text-red-400">5</p>
+      </div>
+      <!-- 平均情感分 -->
+      <div class="bg-gray-800 rounded-lg border border-gray-700 p-4">
+        <h3 class="text-sm text-gray-400 mb-1">平均情感分</h3>
+        <p class="text-2xl font-bold text-purple-400">3.2</p>
+      </div>
+    </div>
+
+    <!-- 图表区域 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 情感分布 -->
+      <div class="bg-gray-800 rounded-lg border border-gray-700 p-4">
+        <h3 class="text-sm text-gray-400 mb-4">情感分布</h3>
+        <div class="h-80">
+          <div id="sentimentChart" class="w-full h-full"></div>
         </div>
-        <div class="mt-6">
-          <button 
-            @click="loadVisualization" 
-            class="bg-primary text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors flex items-center"
-          >
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-            </svg>
-            加载可视化
-          </button>
+      </div>
+      <!-- 高频关键词云 -->
+      <div class="bg-gray-800 rounded-lg border border-gray-700 p-4">
+        <h3 class="text-sm text-gray-400 mb-4">高频关键词云</h3>
+        <div class="h-80">
+          <div id="keywordCloud" class="w-full h-full"></div>
         </div>
       </div>
     </div>
 
-    <!-- 可视化结果卡片 -->
-    <div v-if="visualizationData" class="space-y-8">
-      <!-- 情感分布饼图 -->
-      <div class="bg-white rounded-lg shadow-md p-8">
-        <h3 class="text-lg font-semibold mb-4">情感分布</h3>
-        <div class="h-80 border rounded-lg p-4">
-          <div id="sentimentChart" class="w-full h-full"></div>
-        </div>
-      </div>
-
-      <!-- 舆情趋势折线图 -->
-      <div class="bg-white rounded-lg shadow-md p-8">
-        <h3 class="text-lg font-semibold mb-4">舆情趋势</h3>
-        <div class="h-80 border rounded-lg p-4">
-          <div id="trendChart" class="w-full h-full"></div>
-        </div>
-      </div>
-
-      <!-- 高频关键词云 -->
-      <div class="bg-white rounded-lg shadow-md p-8">
-        <h3 class="text-lg font-semibold mb-4">高频关键词</h3>
-        <div class="h-80 border rounded-lg p-4">
-          <div id="keywordCloud" class="w-full h-full"></div>
-        </div>
-      </div>
-
-      <!-- 评论样本 -->
-      <div class="bg-white rounded-lg shadow-md p-8">
-        <h3 class="text-lg font-semibold mb-4">评论样本</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div v-for="(comment, index) in visualizationData.comments" :key="index" class="border rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div class="flex justify-between items-start">
-              <p class="text-gray-700">{{ comment.content }}</p>
-              <span 
-                class="px-2 py-1 rounded-full text-xs"
-                :class="comment.sentiment === 'positive' ? 'bg-green-100 text-green-800' : comment.sentiment === 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'"
-              >
-                {{ comment.sentiment === 'positive' ? '正面' : comment.sentiment === 'negative' ? '负面' : '中性' }}
-              </span>
-            </div>
-            <div class="mt-2 text-sm text-gray-500">
-              {{ comment.platform }} - {{ comment.created_at }}
-            </div>
-          </div>
-        </div>
+    <!-- 舆情趋势 -->
+    <div class="bg-gray-800 rounded-lg border border-gray-700 p-4">
+      <h3 class="text-sm text-gray-400 mb-4">舆情趋势 (近7天)</h3>
+      <div class="h-80">
+        <div id="trendChart" class="w-full h-full"></div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as echarts from 'echarts'
 
-const selectedTask = ref('')
-const timeRange = ref('day')
 const visualizationData = ref<any>(null)
-
-const tasks = ref([
-  {
-    id: 'task_123',
-    platform: '微博',
-    keywords: '产品,服务',
-    count: 100,
-    status: 'completed'
-  },
-  {
-    id: 'task_456',
-    platform: '抖音',
-    keywords: '价格,质量',
-    count: 50,
-    status: 'completed'
-  }
-])
 
 const loadVisualization = () => {
   // 模拟可视化数据
@@ -149,12 +99,6 @@ const loadVisualization = () => {
       { name: '速度', value: 2, sentiment: 'positive' },
       { name: '客服', value: 2, sentiment: 'positive' },
       { name: '性价比', value: 2, sentiment: 'neutral' }
-    ],
-    comments: [
-      { content: '这个产品非常好，服务也很周到', sentiment: 'positive', platform: '微博', created_at: '2023-01-01 12:00:00' },
-      { content: '价格有点贵，但是质量还可以', sentiment: 'neutral', platform: '微博', created_at: '2023-01-02 10:30:00' },
-      { content: '体验很差，不会再买了', sentiment: 'negative', platform: '抖音', created_at: '2023-01-03 15:20:00' },
-      { content: '物流速度很快，包装也很精美', sentiment: 'positive', platform: '抖音', created_at: '2023-01-04 09:15:00' }
     ]
   }
   
@@ -170,10 +114,6 @@ const renderSentimentChart = () => {
   if (chartDom) {
     const myChart = echarts.init(chartDom)
     const option = {
-      title: {
-        text: '情感分布',
-        left: 'center'
-      },
       tooltip: {
         trigger: 'item',
         formatter: '{a} <br/>{b}: {c} ({d}%)'
@@ -181,7 +121,10 @@ const renderSentimentChart = () => {
       legend: {
         orient: 'vertical',
         left: 'left',
-        data: ['正面', '负面', '中性']
+        data: ['正面', '负面', '中性'],
+        textStyle: {
+          color: '#ccc'
+        }
       },
       series: [
         {
@@ -201,7 +144,8 @@ const renderSentimentChart = () => {
             }
           }
         }
-      ]
+      ],
+      backgroundColor: 'transparent'
     }
     myChart.setOption(option)
   }
@@ -212,14 +156,14 @@ const renderTrendChart = () => {
   if (chartDom) {
     const myChart = echarts.init(chartDom)
     const option = {
-      title: {
-        text: '舆情趋势分析'
-      },
       tooltip: {
         trigger: 'axis'
       },
       legend: {
-        data: ['正面', '负面', '中性']
+        data: ['正面', '负面', '中性'],
+        textStyle: {
+          color: '#ccc'
+        }
       },
       grid: {
         left: '3%',
@@ -230,12 +174,33 @@ const renderTrendChart = () => {
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: visualizationData.value.trends.map((item: any) => item.date)
+        data: visualizationData.value.trends.map((item: any) => item.date),
+        axisLabel: {
+          color: '#ccc'
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#444'
+          }
+        }
       },
       yAxis: {
         type: 'value',
         min: 0,
-        max: 1
+        max: 1,
+        axisLabel: {
+          color: '#ccc'
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#444'
+          }
+        },
+        splitLine: {
+          lineStyle: {
+            color: '#333'
+          }
+        }
       },
       series: [
         {
@@ -265,7 +230,8 @@ const renderTrendChart = () => {
             color: '#86909C'
           }
         }
-      ]
+      ],
+      backgroundColor: 'transparent'
     }
     myChart.setOption(option)
   }
@@ -276,10 +242,6 @@ const renderKeywordCloud = () => {
   if (chartDom) {
     const myChart = echarts.init(chartDom)
     const option = {
-      title: {
-        text: '高频关键词',
-        left: 'center'
-      },
       tooltip: {},
       series: [
         {
@@ -319,20 +281,16 @@ const renderKeywordCloud = () => {
             value: item.value
           }))
         }
-      ]
+      ],
+      backgroundColor: 'transparent'
     }
     myChart.setOption(option)
   }
 }
 
-watch(visualizationData, (newVal) => {
-  if (newVal) {
-    setTimeout(() => {
-      renderSentimentChart()
-      renderTrendChart()
-      renderKeywordCloud()
-    }, 100)
-  }
+// 页面加载时自动加载数据
+onMounted(() => {
+  loadVisualization()
 })
 </script>
 

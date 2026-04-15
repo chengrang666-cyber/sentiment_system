@@ -8,79 +8,32 @@ const currentRoute = ref('')
 onMounted(() => {
   currentRoute.value = route.name as string
 })
-
-const updateRoute = () => {
-  currentRoute.value = route.name as string
-}
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-50">
+  <div class="min-h-screen flex flex-col bg-gray-900 text-white">
     <!-- 顶部导航栏 -->
-    <header class="bg-primary text-white shadow-lg sticky top-0 z-50">
+    <header class="bg-gray-800 text-white shadow-lg sticky top-0 z-50">
       <div class="container mx-auto px-4 py-3 flex justify-between items-center">
         <h1 class="text-xl font-bold flex items-center">
           <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
             <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path>
           </svg>
-          社交媒体评论情感分析系统
+          SentimentAI / 舆情分析系统
         </h1>
         <nav class="hidden md:flex space-x-6">
-          <router-link 
-            to="/" 
-            class="hover:text-gray-200 transition-colors flex items-center"
-            :class="currentRoute === 'Home' ? 'font-semibold border-b-2 border-white' : ''"
-            @click="updateRoute"
-          >
-            <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
-            </svg>
-            首页
-          </router-link>
-          <router-link 
-            to="/collection" 
-            class="hover:text-gray-200 transition-colors flex items-center"
-            :class="currentRoute === 'Collection' ? 'font-semibold border-b-2 border-white' : ''"
-            @click="updateRoute"
-          >
-            <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
-            </svg>
-            数据采集
-          </router-link>
-          <router-link 
-            to="/analysis" 
-            class="hover:text-gray-200 transition-colors flex items-center"
-            :class="currentRoute === 'Analysis' ? 'font-semibold border-b-2 border-white' : ''"
-            @click="updateRoute"
-          >
-            <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-            </svg>
-            分析
-          </router-link>
-          <router-link 
-            to="/visualization" 
-            class="hover:text-gray-200 transition-colors flex items-center"
-            :class="currentRoute === 'Visualization' ? 'font-semibold border-b-2 border-white' : ''"
-            @click="updateRoute"
-          >
-            <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
-            </svg>
-            可视化
-          </router-link>
-          <router-link 
-            to="/management" 
-            class="hover:text-gray-200 transition-colors flex items-center"
-            :class="currentRoute === 'Management' ? 'font-semibold border-b-2 border-white' : ''"
-            @click="updateRoute"
-          >
-            <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
-            </svg>
-            管理
-          </router-link>
+          <a href="#" class="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700 transition-colors flex items-center">
+            大屏监控
+          </a>
+          <a href="#" class="text-gray-300 hover:text-white transition-colors flex items-center">
+            任务管理
+          </a>
+          <a href="#" class="text-gray-300 hover:text-white transition-colors flex items-center">
+            评论浏览
+          </a>
+          <a href="#" class="text-gray-300 hover:text-white transition-colors flex items-center">
+            AI对话
+          </a>
         </nav>
         <!-- 移动端菜单按钮 -->
         <button class="md:hidden text-white focus:outline-none">
