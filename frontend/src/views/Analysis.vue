@@ -1,157 +1,135 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- 顶部导航栏 -->
-    <header class="bg-primary text-white shadow-md">
-      <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-        <h1 class="text-xl font-bold">社交媒体评论情感分析系统</h1>
-        <nav>
-          <ul class="flex space-x-6">
-            <li><router-link to="/" class="hover:text-gray-200">首页</router-link></li>
-            <li><router-link to="/collection" class="hover:text-gray-200">数据采集</router-link></li>
-            <li><router-link to="/analysis" class="hover:text-gray-200 font-semibold">分析</router-link></li>
-            <li><router-link to="/visualization" class="hover:text-gray-200">可视化</router-link></li>
-            <li><router-link to="/management" class="hover:text-gray-200">管理</router-link></li>
-          </ul>
-        </nav>
-      </div>
-    </header>
-
-    <!-- 主内容区 -->
-    <main class="container mx-auto px-4 py-8">
-      <div class="bg-white rounded-lg shadow-md p-8 mb-8">
-        <h2 class="text-2xl font-semibold mb-6 text-primary">情感分析</h2>
-        
-        <!-- 分析配置 -->
-        <div class="mb-8">
-          <h3 class="text-lg font-semibold mb-4">分析配置</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-gray-700 mb-2">选择采集任务</label>
-              <select 
-                v-model="selectedTask" 
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">请选择采集任务</option>
-                <option v-for="task in tasks" :key="task.id" :value="task.id">
-                  {{ task.id }} - {{ task.platform }} - {{ task.keywords }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-gray-700 mb-2">分析类型</label>
-              <div class="flex space-x-4">
-                <label class="flex items-center">
-                  <input 
-                    type="radio" 
-                    v-model="analysisType" 
-                    value="sentiment" 
-                    class="mr-2"
-                  >
-                  情感分析
-                </label>
-                <label class="flex items-center">
-                  <input 
-                    type="radio" 
-                    v-model="analysisType" 
-                    value="keywords" 
-                    class="mr-2"
-                  >
-                  关键词提取
-                </label>
-                <label class="flex items-center">
-                  <input 
-                    type="radio" 
-                    v-model="analysisType" 
-                    value="trend" 
-                    class="mr-2"
-                  >
-                  舆情趋势
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="mt-6">
-            <button 
-              @click="startAnalysis" 
-              class="bg-primary text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors"
+  <div class="space-y-8">
+    <!-- 分析配置卡片 -->
+    <div class="bg-white rounded-lg shadow-md p-8">
+      <h2 class="text-2xl font-semibold mb-6 text-primary">情感分析</h2>
+      
+      <!-- 分析配置 -->
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold mb-4">分析配置</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-gray-700 mb-2">选择采集任务</label>
+            <select 
+              v-model="selectedTask" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              开始分析
-            </button>
+              <option value="">请选择采集任务</option>
+              <option v-for="task in tasks" :key="task.id" :value="task.id">
+                {{ task.id }} - {{ task.platform }} - {{ task.keywords }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-700 mb-2">分析类型</label>
+            <div class="flex flex-wrap gap-4">
+              <label class="flex items-center">
+                <input 
+                  type="radio" 
+                  v-model="analysisType" 
+                  value="sentiment" 
+                  class="mr-2"
+                >
+                情感分析
+              </label>
+              <label class="flex items-center">
+                <input 
+                  type="radio" 
+                  v-model="analysisType" 
+                  value="keywords" 
+                  class="mr-2"
+                >
+                关键词提取
+              </label>
+              <label class="flex items-center">
+                <input 
+                  type="radio" 
+                  v-model="analysisType" 
+                  value="trend" 
+                  class="mr-2"
+                >
+                舆情趋势
+              </label>
+            </div>
           </div>
         </div>
+        <div class="mt-6">
+          <button 
+            @click="startAnalysis" 
+            class="bg-primary text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors flex items-center"
+          >
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            开始分析
+          </button>
+        </div>
+      </div>
+    </div>
 
-        <!-- 分析结果 -->
-        <div v-if="analysisResults" class="mt-8">
-          <h3 class="text-lg font-semibold mb-4">分析结果</h3>
-          
-          <!-- 情感分析结果 -->
-          <div v-if="analysisType === 'sentiment'">
-            <div class="overflow-x-auto">
-              <table class="min-w-full bg-white border border-gray-200">
-                <thead>
-                  <tr>
-                    <th class="py-2 px-4 border-b bg-gray-50">评论内容</th>
-                    <th class="py-2 px-4 border-b bg-gray-50">情感极性</th>
-                    <th class="py-2 px-4 border-b bg-gray-50">情感强度</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(result, index) in analysisResults" :key="index">
-                    <td class="py-2 px-4 border-b">{{ result.content }}</td>
-                    <td class="py-2 px-4 border-b">
-                      <span 
-                        class="px-2 py-1 rounded-full text-xs"
-                        :class="result.sentiment === 'positive' ? 'bg-green-100 text-green-800' : result.sentiment === 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'"
-                      >
-                        {{ result.sentiment === 'positive' ? '正面' : result.sentiment === 'negative' ? '负面' : '中性' }}
-                      </span>
-                    </td>
-                    <td class="py-2 px-4 border-b">{{ result.score.toFixed(2) }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- 关键词提取结果 -->
-          <div v-else-if="analysisType === 'keywords'">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div v-for="(keyword, index) in analysisResults" :key="index" class="border rounded-lg p-4">
-                <div class="flex justify-between items-center">
-                  <h4 class="font-semibold">{{ keyword.word }}</h4>
-                  <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                    频率: {{ keyword.frequency }}
-                  </span>
-                </div>
-                <div class="mt-2">
+    <!-- 分析结果卡片 -->
+    <div v-if="analysisResults" class="bg-white rounded-lg shadow-md p-8">
+      <h3 class="text-lg font-semibold mb-4">分析结果</h3>
+      
+      <!-- 情感分析结果 -->
+      <div v-if="analysisType === 'sentiment'">
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="py-3 px-4 border-b text-left">评论内容</th>
+                <th class="py-3 px-4 border-b text-left">情感极性</th>
+                <th class="py-3 px-4 border-b text-left">情感强度</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(result, index) in analysisResults" :key="index" class="hover:bg-gray-50 transition-colors">
+                <td class="py-3 px-4 border-b">{{ result.content }}</td>
+                <td class="py-3 px-4 border-b">
                   <span 
                     class="px-2 py-1 rounded-full text-xs"
-                    :class="keyword.sentiment === 'positive' ? 'bg-green-100 text-green-800' : keyword.sentiment === 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'"
+                    :class="result.sentiment === 'positive' ? 'bg-green-100 text-green-800' : result.sentiment === 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'"
                   >
-                    {{ keyword.sentiment === 'positive' ? '正面' : keyword.sentiment === 'negative' ? '负面' : '中性' }}
+                    {{ result.sentiment === 'positive' ? '正面' : result.sentiment === 'negative' ? '负面' : '中性' }}
                   </span>
-                </div>
-              </div>
-            </div>
-          </div>
+                </td>
+                <td class="py-3 px-4 border-b">{{ result.score.toFixed(2) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-          <!-- 舆情趋势结果 -->
-          <div v-else-if="analysisType === 'trend'">
-            <div class="h-80">
-              <!-- 这里应该使用ECharts绘制趋势图 -->
-              <div id="trendChart" class="w-full h-full"></div>
+      <!-- 关键词提取结果 -->
+      <div v-else-if="analysisType === 'keywords'">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div v-for="(keyword, index) in analysisResults" :key="index" class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-center">
+              <h4 class="font-semibold">{{ keyword.word }}</h4>
+              <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                频率: {{ keyword.frequency }}
+              </span>
+            </div>
+            <div class="mt-2">
+              <span 
+                class="px-2 py-1 rounded-full text-xs"
+                :class="keyword.sentiment === 'positive' ? 'bg-green-100 text-green-800' : keyword.sentiment === 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'"
+              >
+                {{ keyword.sentiment === 'positive' ? '正面' : keyword.sentiment === 'negative' ? '负面' : '中性' }}
+              </span>
             </div>
           </div>
         </div>
       </div>
-    </main>
 
-    <!-- 页脚 -->
-    <footer class="bg-gray-800 text-white py-6 mt-8">
-      <div class="container mx-auto px-4 text-center">
-        <p>© 2026 社交媒体评论情感分析系统</p>
+      <!-- 舆情趋势结果 -->
+      <div v-else-if="analysisType === 'trend'">
+        <div class="h-80 border rounded-lg p-4">
+          <!-- 这里应该使用ECharts绘制趋势图 -->
+          <div id="trendChart" class="w-full h-full"></div>
+        </div>
       </div>
-    </footer>
+    </div>
   </div>
 </template>
 
