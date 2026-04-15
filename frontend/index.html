@@ -1,13 +1,1426 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentimentAI - 舆情分析系统</title>
+    <!-- 引入CDN依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 全局样式 -->
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --purple-color: #8b5cf6;
+            --dark-bg: #1e293b;
+            --darker-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            font-weight: 400;
+            color: var(--text-color);
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+            min-height: 100vh;
+        }
+        
+        #app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 导航栏样式 */
+        .header {
+            background: var(--dark-bg);
+            box-shadow: 0 4px 6px -1px var(--shadow-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+        
+        .header.scrolled {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .logo-icon {
+            color: var(--primary-color);
+            margin-right: 0.5rem;
+        }
+        
+        .logo-text {
+            color: var(--primary-color);
+        }
+        
+        .logo-separator {
+            color: var(--text-secondary);
+            margin: 0 0.5rem;
+        }
+        
+        .logo-subtext {
+            color: var(--text-secondary);
+        }
+        
+        /* 桌面端导航 */
+        .nav {
+            display: none;
+        }
+        
+        @media (min-width: 768px) {
+            .nav {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: var(--text-color);
+            background: rgba(51, 65, 85, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+        }
+        
+        .nav-icon {
+            margin-right: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        /* 移动端菜单按钮 */
+        .menu-btn {
+            display: block;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 9999px;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-btn:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+        
+        @media (min-width: 768px) {
+            .menu-btn {
+                display: none;
+            }
+        }
+        
+        /* 移动端导航菜单 */
+        .mobile-nav {
+            background: var(--dark-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 1rem 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-nav.show {
+            max-height: 300px;
+        }
+        
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .mobile-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .mobile-nav-link:hover {
+            color: var(--text-color);
+            background: rgba(51, 65, 85, 0.5);
+        }
+        
+        .mobile-nav-link.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .mobile-nav-icon {
+            margin-right: 0.75rem;
+            font-size: 1rem;
+        }
+        
+        /* 主内容区 */
+        .main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        /* 页面标题 */
+        .page-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            .page-title {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+        
+        .title-content {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        .title-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        @media (min-width: 768px) {
+            .title-text {
+                font-size: 2rem;
+            }
+        }
+        
+        .title-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+        }
+        
+        @media (min-width: 768px) {
+            .title-actions {
+                width: auto;
+            }
+        }
+        
+        .select-container {
+            position: relative;
+            flex: 1;
+            max-width: 180px;
+        }
+        
+        .select {
+            width: 100%;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem 2rem 0.5rem 1rem;
+            appearance: none;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+        
+        .select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .select-arrow {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+        
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: rgba(51, 65, 85, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .refresh-icon {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (min-width: 640px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            box-shadow: 0 10px 15px -3px var(--shadow-color);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card:nth-child(1):hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .stat-card:nth-child(2):hover {
+            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
+        }
+        
+        .stat-card:nth-child(3):hover {
+            border-color: rgba(239, 68, 68, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2);
+        }
+        
+        .stat-card:nth-child(4):hover {
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.2);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-info h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+        }
+        
+        .stat-card:nth-child(1) .stat-icon {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--primary-color);
+        }
+        
+        .stat-card:nth-child(2) .stat-icon {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--secondary-color);
+        }
+        
+        .stat-card:nth-child(3) .stat-icon {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+        }
+        
+        .stat-card:nth-child(4) .stat-icon {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--purple-color);
+        }
+        
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        
+        .trend-indicator {
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .trend-up {
+            color: var(--secondary-color);
+        }
+        
+        .trend-neutral {
+            color: var(--warning-color);
+        }
+        
+        .trend-icon {
+            margin-right: 0.25rem;
+            font-size: 0.625rem;
+        }
+        
+        /* 图表区域 */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (min-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .chart-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-card:hover {
+            box-shadow: 0 10px 15px -3px var(--shadow-color);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .chart-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .chart-action-btn {
+            background: rgba(51, 65, 85, 0.5);
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-action-btn:hover {
+            background: rgba(51, 65, 85, 0.8);
+            color: var(--text-color);
+        }
+        
+        .chart-action-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .chart-container {
+            height: 300px;
+            width: 100%;
+        }
+        
+        /* 趋势图表 */
+        .trend-chart-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .trend-chart-card:hover {
+            box-shadow: 0 10px 15px -3px var(--shadow-color);
+        }
+        
+        /* 评论表格 */
+        .comments-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .comments-card:hover {
+            box-shadow: 0 10px 15px -3px var(--shadow-color);
+        }
+        
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .view-all-btn {
+            background: rgba(51, 65, 85, 0.5);
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .view-all-btn:hover {
+            background: rgba(51, 65, 85, 0.8);
+            color: var(--text-color);
+        }
+        
+        .comments-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+        }
+        
+        .comments-table thead {
+            background: rgba(51, 65, 85, 0.3);
+        }
+        
+        .comments-table th,
+        .comments-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .comments-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        
+        .comments-table td {
+            font-size: 0.875rem;
+            color: var(--text-color);
+        }
+        
+        .comments-table tr:hover {
+            background: rgba(51, 65, 85, 0.2);
+        }
+        
+        .sentiment-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .sentiment-positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--secondary-color);
+        }
+        
+        .sentiment-negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+        }
+        
+        .sentiment-neutral {
+            background: rgba(148, 163, 184, 0.2);
+            color: var(--text-secondary);
+        }
+        
+        /* 页脚 */
+        .footer {
+            background: var(--dark-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            .footer-content {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+        
+        .footer-info {
+            text-align: center;
+        }
+        
+        @media (min-width: 768px) {
+            .footer-info {
+                text-align: left;
+            }
+        }
+        
+        .footer-copyright {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .footer-powered {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: rgba(51, 65, 85, 0.5);
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+        
+        .social-link:hover {
+            background: rgba(51, 65, 85, 0.8);
+            color: var(--text-color);
+            transform: translateY(-2px);
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.5);
+        }
+        
+        /* 页面过渡动画 */
+        .page-enter-active,
+        .page-leave-active {
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .page-enter-from,
+        .page-leave-to {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部导航栏 -->
+        <header class="header" :class="{ 'scrolled': isScrolled }">
+            <div class="container">
+                <div class="header-content">
+                    <h1 class="logo">
+                        <span class="logo-icon"><i class="fa fa-line-chart"></i></span>
+                        <span class="logo-text">SentimentAI</span>
+                        <span class="logo-separator">/</span>
+                        <span class="logo-subtext">舆情分析系统</span>
+                    </h1>
+                    
+                    <!-- 桌面端导航 -->
+                    <nav class="nav">
+                        <a href="#" class="nav-link active" @click.prevent="setPage('home')">
+                            <span class="nav-icon"><i class="fa fa-dashboard"></i></span>
+                            大屏监控
+                        </a>
+                        <a href="#" class="nav-link" @click.prevent="setPage('tasks')">
+                            <span class="nav-icon"><i class="fa fa-tasks"></i></span>
+                            任务管理
+                        </a>
+                        <a href="#" class="nav-link" @click.prevent="setPage('comments')">
+                            <span class="nav-icon"><i class="fa fa-comments"></i></span>
+                            评论浏览
+                        </a>
+                        <a href="#" class="nav-link" @click.prevent="setPage('ai')">
+                            <span class="nav-icon"><i class="fa fa-robot"></i></span>
+                            AI对话
+                        </a>
+                    </nav>
+                    
+                    <!-- 移动端菜单按钮 -->
+                    <button class="menu-btn" @click="toggleMenu">
+                        <i v-if="!isMenuOpen" class="fa fa-bars"></i>
+                        <i v-else class="fa fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- 移动端导航菜单 -->
+                <div class="mobile-nav" :class="{ 'show': isMenuOpen }">
+                    <div class="mobile-nav-links">
+                        <a href="#" class="mobile-nav-link active" @click.prevent="setPage('home'); toggleMenu()">
+                            <span class="mobile-nav-icon"><i class="fa fa-dashboard"></i></span>
+                            大屏监控
+                        </a>
+                        <a href="#" class="mobile-nav-link" @click.prevent="setPage('tasks'); toggleMenu()">
+                            <span class="mobile-nav-icon"><i class="fa fa-tasks"></i></span>
+                            任务管理
+                        </a>
+                        <a href="#" class="mobile-nav-link" @click.prevent="setPage('comments'); toggleMenu()">
+                            <span class="mobile-nav-icon"><i class="fa fa-comments"></i></span>
+                            评论浏览
+                        </a>
+                        <a href="#" class="mobile-nav-link" @click.prevent="setPage('ai'); toggleMenu()">
+                            <span class="mobile-nav-icon"><i class="fa fa-robot"></i></span>
+                            AI对话
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main class="main">
+            <div class="container">
+                <!-- 大屏监控页面 -->
+                <div v-if="page === 'home'">
+                    <!-- 实时舆情监控大屏标题 -->
+                    <div class="page-title">
+                        <div class="title-content">
+                            <span class="status-indicator"></span>
+                            <h2 class="title-text">实时舆情监控大屏</h2>
+                        </div>
+                        <div class="title-actions">
+                            <div class="select-container">
+                                <select class="select">
+                                    <option>--全部任务--</option>
+                                    <option>任务 1</option>
+                                    <option>任务 2</option>
+                                    <option>任务 3</option>
+                                </select>
+                                <div class="select-arrow">
+                                    <i class="fa fa-chevron-down"></i>
+                                </div>
+                            </div>
+                            <button class="refresh-btn" @click="loadVisualization">
+                                <i class="fa fa-refresh refresh-icon"></i>
+                                刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 统计卡片 -->
+                    <div class="stats-grid">
+                        <!-- 总任务数 -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-info">
+                                    <h3>总任务数</h3>
+                                    <p class="stat-value">{{ stats.totalTasks }}</p>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fa fa-tasks"></i>
+                                </div>
+                            </div>
+                            <div class="stat-trend">
+                                <span class="trend-indicator trend-up">
+                                    <i class="fa fa-arrow-up trend-icon"></i>
+                                    {{ stats.totalTasks }} 任务
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- 采集评论数 -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-info">
+                                    <h3>采集评论数</h3>
+                                    <p class="stat-value">{{ stats.collectedComments }}</p>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fa fa-comments"></i>
+                                </div>
+                            </div>
+                            <div class="stat-trend">
+                                <span class="trend-indicator trend-up">
+                                    <i class="fa fa-arrow-up trend-icon"></i>
+                                    {{ stats.collectedComments }} 条评论
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- 已分析数 -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-info">
+                                    <h3>已分析数</h3>
+                                    <p class="stat-value">{{ stats.analyzedCount }}</p>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fa fa-check-circle"></i>
+                                </div>
+                            </div>
+                            <div class="stat-trend">
+                                <span class="trend-indicator trend-up">
+                                    <i class="fa fa-arrow-up trend-icon"></i>
+                                    100% 完成
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- 平均情感分 -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-info">
+                                    <h3>平均情感分</h3>
+                                    <p class="stat-value">{{ stats.averageSentiment }}</p>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fa fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="stat-trend">
+                                <span class="trend-indicator trend-neutral">
+                                    <i class="fa fa-minus trend-icon"></i>
+                                    中性偏正面
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 图表区域 -->
+                    <div class="charts-grid">
+                        <!-- 情感分布 -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">情感分布</h3>
+                                <div class="chart-actions">
+                                    <button class="chart-action-btn">日</button>
+                                    <button class="chart-action-btn active">周</button>
+                                    <button class="chart-action-btn">月</button>
+                                </div>
+                            </div>
+                            <div class="chart-container" ref="sentimentChartRef"></div>
+                        </div>
+                        
+                        <!-- 高频关键词云 -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">高频关键词云</h3>
+                                <button class="chart-action-btn" @click="loadVisualization">
+                                    <i class="fa fa-refresh"></i> 刷新
+                                </button>
+                            </div>
+                            <div class="chart-container" ref="keywordCloudRef"></div>
+                        </div>
+                    </div>
+
+                    <!-- 舆情趋势 -->
+                    <div class="trend-chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">舆情趋势 (近7天)</h3>
+                            <div class="chart-actions">
+                                <button class="chart-action-btn active">情感趋势</button>
+                                <button class="chart-action-btn">热度趋势</button>
+                            </div>
+                        </div>
+                        <div class="chart-container" ref="trendChartRef"></div>
+                    </div>
+
+                    <!-- 最近评论 -->
+                    <div class="comments-card">
+                        <div class="comments-header">
+                            <h3 class="chart-title">最近评论</h3>
+                            <button class="view-all-btn">查看全部</button>
+                        </div>
+                        <table class="comments-table">
+                            <thead>
+                                <tr>
+                                    <th>评论内容</th>
+                                    <th>平台</th>
+                                    <th>情感</th>
+                                    <th>时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(comment, index) in recentComments" :key="index">
+                                    <td>{{ comment.content }}</td>
+                                    <td>{{ comment.platform }}</td>
+                                    <td>
+                                        <span :class="['sentiment-badge', `sentiment-${comment.sentiment}`]">
+                                            {{ comment.sentiment === 'positive' ? '正面' : comment.sentiment === 'negative' ? '负面' : '中性' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ comment.time }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 其他页面 -->
+                <div v-else>
+                    <div class="page-title">
+                        <h2 class="title-text">{{ page === 'tasks' ? '任务管理' : page === 'comments' ? '评论浏览' : 'AI对话' }}</h2>
+                    </div>
+                    <div class="chart-card" style="text-align: center; padding: 4rem 2rem;">
+                        <i class="fa fa-building-o" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--text-color); margin-bottom: 0.5rem;">功能开发中</h3>
+                        <p style="color: var(--text-secondary);">该页面正在开发中，敬请期待！</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-info">
+                        <p class="footer-copyright">© 2026 SentimentAI 舆情分析系统</p>
+                        <p class="footer-powered">Powered by Large Language Models</p>
+                    </div>
+                    <div class="footer-social">
+                        <a href="#" class="social-link"><i class="fa fa-github"></i></a>
+                        <a href="#" class="social-link"><i class="fa fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fa fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted, onUnmounted, nextTick } = Vue;
+
+        createApp({
+            setup() {
+                // 状态管理
+                const page = ref('home');
+                const isMenuOpen = ref(false);
+                const isScrolled = ref(false);
+                const stats = ref({
+                    totalTasks: 1,
+                    collectedComments: 5,
+                    analyzedCount: 5,
+                    averageSentiment: 3.2
+                });
+                const recentComments = ref([
+                    { content: '这个产品非常好，服务也很周到', platform: '微博', sentiment: 'positive', time: '2023-01-01 12:00' },
+                    { content: '价格有点贵，但是质量还可以', platform: '微博', sentiment: 'neutral', time: '2023-01-02 10:30' },
+                    { content: '体验很差，不会再买了', platform: '抖音', sentiment: 'negative', time: '2023-01-03 15:20' },
+                    { content: '物流速度很快，包装也很精美', platform: '抖音', sentiment: 'positive', time: '2023-01-04 09:15' }
+                ]);
+                
+                // 图表实例
+                const sentimentChartRef = ref(null);
+                const trendChartRef = ref(null);
+                const keywordCloudRef = ref(null);
+                let sentimentChart = null;
+                let trendChart = null;
+                let keywordCloud = null;
+                
+                // 可视化数据
+                const visualizationData = ref(null);
+                
+                // 页面切换
+                const setPage = (newPage) => {
+                    page.value = newPage;
+                };
+                
+                // 菜单切换
+                const toggleMenu = () => {
+                    isMenuOpen.value = !isMenuOpen.value;
+                };
+                
+                // 滚动处理
+                const handleScroll = () => {
+                    isScrolled.value = window.scrollY > 50;
+                };
+                
+                // 加载可视化数据
+                const loadVisualization = () => {
+                    // 模拟可视化数据
+                    visualizationData.value = {
+                        sentiment: {
+                            positive: 60,
+                            negative: 20,
+                            neutral: 20
+                        },
+                        trends: [
+                            { date: '2023-01-01', positive: 0.6, negative: 0.2, neutral: 0.2 },
+                            { date: '2023-01-02', positive: 0.62, negative: 0.19, neutral: 0.19 },
+                            { date: '2023-01-03', positive: 0.64, negative: 0.18, neutral: 0.18 },
+                            { date: '2023-01-04', positive: 0.66, negative: 0.17, neutral: 0.17 },
+                            { date: '2023-01-05', positive: 0.68, negative: 0.16, neutral: 0.16 },
+                            { date: '2023-01-06', positive: 0.70, negative: 0.15, neutral: 0.15 },
+                            { date: '2023-01-07', positive: 0.72, negative: 0.14, neutral: 0.14 }
+                        ],
+                        keywords: [
+                            { name: '产品', value: 10, sentiment: 'positive' },
+                            { name: '服务', value: 8, sentiment: 'positive' },
+                            { name: '价格', value: 6, sentiment: 'negative' },
+                            { name: '质量', value: 5, sentiment: 'positive' },
+                            { name: '物流', value: 4, sentiment: 'positive' },
+                            { name: '包装', value: 3, sentiment: 'positive' },
+                            { name: '体验', value: 3, sentiment: 'negative' },
+                            { name: '速度', value: 2, sentiment: 'positive' },
+                            { name: '客服', value: 2, sentiment: 'positive' },
+                            { name: '性价比', value: 2, sentiment: 'neutral' }
+                        ]
+                    };
+                    
+                    nextTick(() => {
+                        renderSentimentChart();
+                        renderTrendChart();
+                        renderKeywordCloud();
+                    });
+                };
+                
+                // 渲染情感分布图表
+                const renderSentimentChart = () => {
+                    if (sentimentChartRef.value && visualizationData.value) {
+                        if (sentimentChart) {
+                            sentimentChart.dispose();
+                        }
+                        sentimentChart = echarts.init(sentimentChartRef.value);
+                        const option = {
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: '{a} <br/>{b}: {c} ({d}%)',
+                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                                borderColor: '#334155',
+                                textStyle: {
+                                    color: '#f8fafc'
+                                }
+                            },
+                            legend: {
+                                orient: 'vertical',
+                                left: 'left',
+                                data: ['正面', '负面', '中性'],
+                                textStyle: {
+                                    color: '#94a3b8'
+                                },
+                                itemWidth: 12,
+                                itemHeight: 12
+                            },
+                            series: [
+                                {
+                                    name: '情感分布',
+                                    type: 'pie',
+                                    radius: ['40%', '70%'],
+                                    center: ['60%', '50%'],
+                                    avoidLabelOverlap: false,
+                                    itemStyle: {
+                                        borderRadius: 10,
+                                        borderColor: '#1e293b',
+                                        borderWidth: 2
+                                    },
+                                    label: {
+                                        show: false,
+                                        position: 'center'
+                                    },
+                                    emphasis: {
+                                        label: {
+                                            show: true,
+                                            fontSize: 20,
+                                            fontWeight: 'bold',
+                                            color: '#f8fafc'
+                                        },
+                                        itemStyle: {
+                                            shadowBlur: 10,
+                                            shadowOffsetX: 0,
+                                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                        }
+                                    },
+                                    labelLine: {
+                                        show: false
+                                    },
+                                    data: [
+                                        { value: visualizationData.value.sentiment.positive, name: '正面', itemStyle: { color: '#10b981' } },
+                                        { value: visualizationData.value.sentiment.negative, name: '负面', itemStyle: { color: '#ef4444' } },
+                                        { value: visualizationData.value.sentiment.neutral, name: '中性', itemStyle: { color: '#94a3b8' } }
+                                    ]
+                                }
+                            ],
+                            backgroundColor: 'transparent'
+                        };
+                        sentimentChart.setOption(option);
+                    }
+                };
+                
+                // 渲染趋势图表
+                const renderTrendChart = () => {
+                    if (trendChartRef.value && visualizationData.value) {
+                        if (trendChart) {
+                            trendChart.dispose();
+                        }
+                        trendChart = echarts.init(trendChartRef.value);
+                        const option = {
+                            tooltip: {
+                                trigger: 'axis',
+                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                                borderColor: '#334155',
+                                textStyle: {
+                                    color: '#f8fafc'
+                                }
+                            },
+                            legend: {
+                                data: ['正面', '负面', '中性'],
+                                textStyle: {
+                                    color: '#94a3b8'
+                                },
+                                top: 0
+                            },
+                            grid: {
+                                left: '3%',
+                                right: '4%',
+                                bottom: '3%',
+                                containLabel: true
+                            },
+                            xAxis: {
+                                type: 'category',
+                                boundaryGap: false,
+                                data: visualizationData.value.trends.map(item => item.date),
+                                axisLabel: {
+                                    color: '#94a3b8'
+                                },
+                                axisLine: {
+                                    lineStyle: {
+                                        color: '#334155'
+                                    }
+                                },
+                                splitLine: {
+                                    show: false
+                                }
+                            },
+                            yAxis: {
+                                type: 'value',
+                                min: 0,
+                                max: 1,
+                                axisLabel: {
+                                    color: '#94a3b8'
+                                },
+                                axisLine: {
+                                    lineStyle: {
+                                        color: '#334155'
+                                    }
+                                },
+                                splitLine: {
+                                    lineStyle: {
+                                        color: '#334155'
+                                    }
+                                }
+                            },
+                            series: [
+                                {
+                                    name: '正面',
+                                    type: 'line',
+                                    stack: 'Total',
+                                    data: visualizationData.value.trends.map(item => item.positive),
+                                    itemStyle: {
+                                        color: '#10b981'
+                                    },
+                                    lineStyle: {
+                                        width: 3
+                                    },
+                                    symbol: 'circle',
+                                    symbolSize: 8,
+                                    emphasis: {
+                                        focus: 'series',
+                                        itemStyle: {
+                                            shadowBlur: 10,
+                                            shadowColor: '#10b981'
+                                        }
+                                    }
+                                },
+                                {
+                                    name: '负面',
+                                    type: 'line',
+                                    stack: 'Total',
+                                    data: visualizationData.value.trends.map(item => item.negative),
+                                    itemStyle: {
+                                        color: '#ef4444'
+                                    },
+                                    lineStyle: {
+                                        width: 3
+                                    },
+                                    symbol: 'circle',
+                                    symbolSize: 8,
+                                    emphasis: {
+                                        focus: 'series',
+                                        itemStyle: {
+                                            shadowBlur: 10,
+                                            shadowColor: '#ef4444'
+                                        }
+                                    }
+                                },
+                                {
+                                    name: '中性',
+                                    type: 'line',
+                                    stack: 'Total',
+                                    data: visualizationData.value.trends.map(item => item.neutral),
+                                    itemStyle: {
+                                        color: '#94a3b8'
+                                    },
+                                    lineStyle: {
+                                        width: 3
+                                    },
+                                    symbol: 'circle',
+                                    symbolSize: 8,
+                                    emphasis: {
+                                        focus: 'series',
+                                        itemStyle: {
+                                            shadowBlur: 10,
+                                            shadowColor: '#94a3b8'
+                                        }
+                                    }
+                                }
+                            ],
+                            backgroundColor: 'transparent'
+                        };
+                        trendChart.setOption(option);
+                    }
+                };
+                
+                // 渲染关键词云
+                const renderKeywordCloud = () => {
+                    if (keywordCloudRef.value && visualizationData.value) {
+                        if (keywordCloud) {
+                            keywordCloud.dispose();
+                        }
+                        keywordCloud = echarts.init(keywordCloudRef.value);
+                        const option = {
+                            tooltip: {
+                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                                borderColor: '#334155',
+                                textStyle: {
+                                    color: '#f8fafc'
+                                }
+                            },
+                            series: [
+                                {
+                                    type: 'wordCloud',
+                                    shape: 'circle',
+                                    left: 'center',
+                                    top: 'center',
+                                    width: '90%',
+                                    height: '90%',
+                                    right: null,
+                                    bottom: null,
+                                    sizeRange: [12, 60],
+                                    rotationRange: [-90, 90],
+                                    rotationStep: 45,
+                                    gridSize: 8,
+                                    drawOutOfBound: false,
+                                    textStyle: {
+                                        fontFamily: 'sans-serif',
+                                        fontWeight: 'bold',
+                                        color: function () {
+                                            const colors = ['#10b981', '#ef4444', '#94a3b8', '#8b5cf6', '#14b8a6', '#f59e0b'];
+                                            return colors[Math.floor(Math.random() * colors.length)];
+                                        }
+                                    },
+                                    emphasis: {
+                                        focus: 'self',
+                                        textStyle: {
+                                            shadowBlur: 10,
+                                            shadowColor: '#333'
+                                        }
+                                    },
+                                    data: visualizationData.value.keywords.map(item => ({
+                                        name: item.name,
+                                        value: item.value
+                                    }))
+                                }
+                            ],
+                            backgroundColor: 'transparent'
+                        };
+                        keywordCloud.setOption(option);
+                    }
+                };
+                
+                // 响应式调整
+                const handleResize = () => {
+                    if (sentimentChart) sentimentChart.resize();
+                    if (trendChart) trendChart.resize();
+                    if (keywordCloud) keywordCloud.resize();
+                };
+                
+                // 生命周期钩子
+                onMounted(() => {
+                    window.addEventListener('scroll', handleScroll);
+                    window.addEventListener('resize', handleResize);
+                    loadVisualization();
+                });
+                
+                onUnmounted(() => {
+                    window.removeEventListener('scroll', handleScroll);
+                    window.removeEventListener('resize', handleResize);
+                    if (sentimentChart) sentimentChart.dispose();
+                    if (trendChart) trendChart.dispose();
+                    if (keywordCloud) keywordCloud.dispose();
+                });
+                
+                return {
+                    page,
+                    isMenuOpen,
+                    isScrolled,
+                    stats,
+                    recentComments,
+                    sentimentChartRef,
+                    trendChartRef,
+                    keywordCloudRef,
+                    setPage,
+                    toggleMenu,
+                    loadVisualization
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
 </html>
