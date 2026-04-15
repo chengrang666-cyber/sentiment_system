@@ -126,22 +126,51 @@ SentimentAI 是一个基于大模型智能体的社交媒体评论情感分析�
 
 ## 模型微调
 
-### LoRA 轻量化微调
+### 完整微调流程
 
-1. 准备微调数据集：
-   ```bash
-   cd finetune/data
-   # 准备包含评论和情感标签的数据集
-   ```
+1. **准备基础底层环境**
+   - 确保安装了最新的 NVIDIA 显卡驱动
+   - 安装 CUDA Toolkit 11.8 或 12.1
 
-2. 运行微调脚本：
+2. **运行微调脚本**
    ```bash
    cd finetune/scripts
    python finetune_lora.py
    ```
 
-3. 加载微调后的模型：
+   该脚本会自动执行以下步骤：
+   - 安装 PyTorch (CUDA 12.1 版本)
+   - 安装 modelscope 库
+   - 克隆 LLaMA-Factory 仓库
+   - 安装 LLaMA-Factory 及其依赖
+   - 下载 Qwen2.5-7B-Instruct 模型
+   - 配置情感分析数据集
+   - 启动 LLaMA-Factory WebUI
+
+3. **在 WebUI 中进行 LoRA 微调**
+   - 在浏览器中访问 http://localhost:7860
+   - 选择模型：Qwen2.5-7B-Instruct
+   - 选择数据集：my_sentiment_dataset
+   - 选择微调方法：LoRA
+   - 配置微调参数（建议使用默认参数）
+   - 点击 "开始训练"
+
+4. **加载微调后的模型**
+   - 微调完成后，模型会保存在 `LLaMA-Factory/saves` 目录
    - 在 `backend/app/agents/sentiment_agent.py` 中修改模型路径
+
+### 数据集说明
+
+微调数据集位于 `/workspace/finetune/data/finetune_dataset_async.jsonl`，包含以下格式的样本：
+
+```json
+{
+  "instruction": "分析以下评论的情感极性（正面/负面/中性）和情感强度（0-1之间的数值）",
+  "input": "这个产品非常好，服务也很周到",
+  "output": "情感极性：正面，情感强度：0.9"
+}
+```
+
 
 ## 性能指标
 
