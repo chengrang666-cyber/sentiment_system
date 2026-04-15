@@ -241,10 +241,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import 'echarts-wordcloud'
 
 const visualizationData = ref<any>(null)
+const sentimentChart = ref<echarts.ECharts | null>(null)
+const trendChart = ref<echarts.ECharts | null>(null)
+const keywordCloud = ref<echarts.ECharts | null>(null)
 
 const loadVisualization = () => {
   // 模拟可视化数据
@@ -286,8 +290,11 @@ const loadVisualization = () => {
 
 const renderSentimentChart = () => {
   const chartDom = document.getElementById('sentimentChart')
-  if (chartDom) {
-    const myChart = echarts.init(chartDom, 'dark')
+  if (chartDom && visualizationData.value) {
+    if (sentimentChart.value) {
+      sentimentChart.value.dispose()
+    }
+    sentimentChart.value = echarts.init(chartDom, 'dark')
     const option = {
       tooltip: {
         trigger: 'item',
@@ -349,19 +356,17 @@ const renderSentimentChart = () => {
       ],
       backgroundColor: 'transparent'
     }
-    myChart.setOption(option)
-    
-    // 响应式调整
-    window.addEventListener('resize', () => {
-      myChart.resize()
-    })
+    sentimentChart.value.setOption(option)
   }
 }
 
 const renderTrendChart = () => {
   const chartDom = document.getElementById('trendChart')
-  if (chartDom) {
-    const myChart = echarts.init(chartDom, 'dark')
+  if (chartDom && visualizationData.value) {
+    if (trendChart.value) {
+      trendChart.value.dispose()
+    }
+    trendChart.value = echarts.init(chartDom, 'dark')
     const option = {
       tooltip: {
         trigger: 'axis',
@@ -485,19 +490,17 @@ const renderTrendChart = () => {
       ],
       backgroundColor: 'transparent'
     }
-    myChart.setOption(option)
-    
-    // 响应式调整
-    window.addEventListener('resize', () => {
-      myChart.resize()
-    })
+    trendChart.value.setOption(option)
   }
 }
 
 const renderKeywordCloud = () => {
   const chartDom = document.getElementById('keywordCloud')
-  if (chartDom) {
-    const myChart = echarts.init(chartDom, 'dark')
+  if (chartDom && visualizationData.value) {
+    if (keywordCloud.value) {
+      keywordCloud.value.dispose()
+    }
+    keywordCloud.value = echarts.init(chartDom, 'dark')
     const option = {
       tooltip: {
         backgroundColor: 'rgba(30, 30, 46, 0.9)',
@@ -544,12 +547,7 @@ const renderKeywordCloud = () => {
       ],
       backgroundColor: 'transparent'
     }
-    myChart.setOption(option)
-    
-    // 响应式调整
-    window.addEventListener('resize', () => {
-      myChart.resize()
-    })
+    keywordCloud.value.setOption(option)
   }
 }
 
@@ -566,6 +564,19 @@ watch(visualizationData, (newVal) => {
       renderTrendChart()
       renderKeywordCloud()
     }, 100)
+  }
+})
+
+// 组件卸载时清理图表
+onUnmounted(() => {
+  if (sentimentChart.value) {
+    sentimentChart.value.dispose()
+  }
+  if (trendChart.value) {
+    trendChart.value.dispose()
+  }
+  if (keywordCloud.value) {
+    keywordCloud.value.dispose()
   }
 })
 </script>
