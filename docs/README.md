@@ -156,8 +156,10 @@ SentimentAI 是一个基于大模型智能体的社交媒体评论情感分析�
    - 点击 "开始训练"
 
 4. **加载微调后的模型**
-   - 微调完成后，模型会保存在 `LLaMA-Factory/saves` 目录
-   - 在 `backend/app/agents/sentiment_agent.py` 中修改模型路径
+   - 微调完成后，模型会保存在 `finetune/LLaMA-Factory/saves` 目录
+   - 系统会自动从 `finetune/LLaMA-Factory/saves/Qwen2.5-7B-Instruct/lora` 路径加载模型
+   - 如果模型路径不存在，系统会使用模拟的方式进行演示
+   - 如需修改模型路径，可以在初始化 SentimentAgent 时传入 model_path 参数
 
 ### 数据集说明
 
