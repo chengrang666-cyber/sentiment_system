@@ -25,44 +25,54 @@ def install_dependencies():
 # 克隆 LLaMA-Factory
 def clone_llama_factory():
     print("克隆 LLaMA-Factory 仓库...")
-    if not os.path.exists("/workspace/finetune/LLaMA-Factory"):
+    # 使用相对路径
+    llama_factory_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "LLaMA-Factory")
+    if not os.path.exists(llama_factory_dir):
         subprocess.run([
             "git", "clone", "https://github.com/hiyouga/LLaMA-Factory.git",
-            "/workspace/finetune/LLaMA-Factory"
+            llama_factory_dir
         ], check=True)
     else:
         print("LLaMA-Factory 已存在，跳过克隆")
+    return llama_factory_dir
 
 # 安装 LLaMA-Factory
-def install_llama_factory():
+def install_llama_factory(llama_factory_dir):
     print("安装 LLaMA-Factory 及其依赖...")
     subprocess.run([
         sys.executable, "-m", "pip", "install", "-e", ".[metrics]"
-    ], cwd="/workspace/finetune/LLaMA-Factory", check=True)
+    ], cwd=llama_factory_dir, check=True)
 
 # 下载模型
-def download_model():
+def download_model(llama_factory_dir):
     print("下载 Qwen2.5-7B-Instruct 模型...")
     script = """
 from modelscope import snapshot_download
 model_dir = snapshot_download('qwen/Qwen2.5-7B-Instruct', cache_dir='./models')
 print(f"模型已下载至: {model_dir}")
 """
-    with open("/workspace/finetune/LLaMA-Factory/download_model.py", "w") as f:
+    download_script_path = os.path.join(llama_factory_dir, "download_model.py")
+    with open(download_script_path, "w") as f:
         f.write(script)
     
     subprocess.run([
         sys.executable, "download_model.py"
-    ], cwd="/workspace/finetune/LLaMA-Factory", check=True)
+    ], cwd=llama_factory_dir, check=True)
 
 # 配置数据集
-def configure_dataset():
+def configure_dataset(llama_factory_dir):
     print("配置数据集...")
+    # 获取数据文件路径
+    current_dir = os.path.dirname(os.path.dirname(__file__))
+    dataset_file = os.path.join(current_dir, "data", "finetune_dataset_async.jsonl")
+    target_dir = os.path.join(llama_factory_dir, "data")
+    
+    # 确保目标目录存在
+    os.makedirs(target_dir, exist_ok=True)
+    
     # 复制数据集文件
-    subprocess.run([
-        "cp", "/workspace/finetune/data/finetune_dataset_async.jsonl",
-        "/workspace/finetune/LLaMA-Factory/data/"
-    ], check=True)
+    import shutil
+    shutil.copy(dataset_file, target_dir)
     
     # 配置 dataset_info.json
     dataset_info = '''{
@@ -76,25 +86,26 @@ def configure_dataset():
   }
 }
 '''
-    with open("/workspace/finetune/LLaMA-Factory/data/dataset_info.json", "w") as f:
+    dataset_info_path = os.path.join(llama_factory_dir, "data", "dataset_info.json")
+    with open(dataset_info_path, "w") as f:
         f.write(dataset_info)
 
 # 启动 WebUI
-def start_webui():
+def start_webui(llama_factory_dir):
     print("启动 LLaMA-Factory WebUI...")
     print("请在浏览器中访问 http://localhost:7860")
     subprocess.run([
         "llamafactory-cli", "webui"
-    ], cwd="/workspace/finetune/LLaMA-Factory")
+    ], cwd=llama_factory_dir)
 
 if __name__ == "__main__":
     try:
         install_dependencies()
-        clone_llama_factory()
-        install_llama_factory()
-        download_model()
-        configure_dataset()
-        start_webui()
+        llama_factory_dir = clone_llama_factory()
+        install_llama_factory(llama_factory_dir)
+        download_model(llama_factory_dir)
+        configure_dataset(llama_factory_dir)
+        start_webui(llama_factory_dir)
     except Exception as e:
         print(f"错误: {e}")
         sys.exit(1)
