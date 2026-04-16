@@ -110,10 +110,10 @@ export default {
   data() {
     return {
       stats: {
-        totalTasks: 1,
-        collectedComments: 5,
-        analyzedComments: 5,
-        averageSentiment: 3.2
+        totalTasks: 0,
+        collectedComments: 0,
+        analyzedComments: 0,
+        averageSentiment: 0
       },
       timeRange: 'week',
       trendType: 'sentiment',
@@ -153,11 +153,7 @@ export default {
             name: '情感分布',
             type: 'pie',
             radius: '70%',
-            data: [
-              { value: 3, name: '正面', itemStyle: { color: '#10b981' } },
-              { value: 1, name: '中性', itemStyle: { color: '#f59e0b' } },
-              { value: 1, name: '负面', itemStyle: { color: '#ef4444' } }
-            ],
+            data: [],
             emphasis: {
               itemStyle: {
                 shadowBlur: 10,
@@ -212,16 +208,7 @@ export default {
                 shadowColor: '#333'
               }
             },
-            data: [
-              { name: '产品', value: 100 },
-              { name: '服务', value: 80 },
-              { name: '质量', value: 70 },
-              { name: '价格', value: 60 },
-              { name: '体验', value: 50 },
-              { name: '物流', value: 40 },
-              { name: '客服', value: 30 },
-              { name: '包装', value: 20 }
-            ]
+            data: []
           }
         ]
       }
@@ -245,7 +232,7 @@ export default {
         xAxis: {
           type: 'category',
           boundaryGap: false,
-          data: ['12-26', '12-27', '12-28', '12-29', '12-30', '12-31', '01-01'],
+          data: [],
           axisLabel: {
             color: '#94a3b8'
           }
@@ -261,7 +248,7 @@ export default {
             name: '正面',
             type: 'line',
             stack: 'Total',
-            data: [120, 132, 101, 134, 90, 230, 210],
+            data: [],
             lineStyle: {
               color: '#10b981'
             },
@@ -276,7 +263,7 @@ export default {
             name: '中性',
             type: 'line',
             stack: 'Total',
-            data: [220, 182, 191, 234, 290, 330, 310],
+            data: [],
             lineStyle: {
               color: '#f59e0b'
             },
@@ -291,7 +278,7 @@ export default {
             name: '负面',
             type: 'line',
             stack: 'Total',
-            data: [150, 232, 201, 154, 190, 330, 410],
+            data: [],
             lineStyle: {
               color: '#ef4444'
             },
