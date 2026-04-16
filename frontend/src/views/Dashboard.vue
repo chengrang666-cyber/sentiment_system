@@ -103,6 +103,7 @@
 
 <script>
 import * as echarts from 'echarts'
+import 'echarts-wordcloud'
 
 export default {
   name: 'Dashboard',
