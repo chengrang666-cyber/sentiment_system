@@ -1,0 +1,34 @@
+# 基础依赖
+fastapi==0.104.1
+uvicorn==0.23.2
+python-dotenv==1.0.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# 数据处理
+pandas
+numpy
+scikit-learn
+
+# 爬虫相关
+requests==2.31.0
+selenium==4.15.2
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# 大模型相关
+langchain
+langchain-core
+langchain-community
+
+# 向量数据库
+faiss-cpu
+
+# 数据库
+mysql-connector-python==8.2.0
+redis==5.0.1
+
+# 其他
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
