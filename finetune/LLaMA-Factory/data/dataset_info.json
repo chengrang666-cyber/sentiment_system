@@ -1,0 +1,10 @@
+{
+  "my_sentiment_dataset": {
+    "file_name": "finetune_dataset_async.jsonl",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output"
+    }
+  }
+}
