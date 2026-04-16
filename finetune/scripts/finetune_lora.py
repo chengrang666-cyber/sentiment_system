@@ -27,13 +27,29 @@ def clone_llama_factory():
     print("克隆 LLaMA-Factory 仓库...")
     # 使用相对路径
     llama_factory_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "LLaMA-Factory")
-    if not os.path.exists(llama_factory_dir):
+    
+    # 检查目录是否存在且是有效的Python项目
+    is_valid_project = os.path.exists(llama_factory_dir) and (
+        os.path.exists(os.path.join(llama_factory_dir, "setup.py")) or 
+        os.path.exists(os.path.join(llama_factory_dir, "pyproject.toml"))
+    )
+    
+    if not is_valid_project:
+        # 如果目录存在但不是有效项目，先删除
+        if os.path.exists(llama_factory_dir):
+            import shutil
+            shutil.rmtree(llama_factory_dir)
+            print("删除无效的 LLaMA-Factory 目录")
+        
+        # 重新克隆
         subprocess.run([
             "git", "clone", "https://github.com/hiyouga/LLaMA-Factory.git",
             llama_factory_dir
         ], check=True)
+        print("LLaMA-Factory 仓库克隆成功")
     else:
-        print("LLaMA-Factory 已存在，跳过克隆")
+        print("LLaMA-Factory 已存在且有效，跳过克隆")
+    
     return llama_factory_dir
 
 # 安装 LLaMA-Factory
