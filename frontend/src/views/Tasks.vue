@@ -64,16 +64,7 @@ export default {
         startDate: '',
         endDate: ''
       },
-      tasks: [
-        {
-          id: 1,
-          keyword: '产品质量',
-          platform: '微博',
-          status: 'completed',
-          collected_count: 5,
-          analyzed_count: 5
-        }
-      ]
+      tasks: []
     }
   },
   methods: {

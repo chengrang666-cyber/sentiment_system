@@ -59,32 +59,7 @@ export default {
       sentimentFilter: '',
       currentPage: 1,
       pageSize: 10,
-      comments: [
-        {
-          id: 1,
-          content: '这个产品非常好，服务也很周到',
-          platform: '微博',
-          sentiment: 'positive',
-          sentiment_score: 0.8,
-          time: '2023-01-01 12:00'
-        },
-        {
-          id: 2,
-          content: '价格有点贵，但是质量还可以',
-          platform: '微博',
-          sentiment: 'neutral',
-          sentiment_score: 0.5,
-          time: '2023-01-02 10:30'
-        },
-        {
-          id: 3,
-          content: '质量太差了，退款！',
-          platform: '抖音',
-          sentiment: 'negative',
-          sentiment_score: 0.2,
-          time: '2023-01-03 15:45'
-        }
-      ]
+      comments: []
     }
   },
   computed: {

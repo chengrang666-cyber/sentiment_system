@@ -117,24 +117,7 @@ export default {
       },
       timeRange: 'week',
       trendType: 'sentiment',
-      recentComments: [
-        {
-          id: 1,
-          content: '这个产品非常好，服务也很周到',
-          platform: '微博',
-          sentiment: 'positive',
-          sentimentText: '正面',
-          time: '2023-01-01 12:00'
-        },
-        {
-          id: 2,
-          content: '价格有点贵，但是质量还可以',
-          platform: '微博',
-          sentiment: 'neutral',
-          sentimentText: '中性',
-          time: '2023-01-02 10:30'
-        }
-      ],
+      recentComments: [],
       sentimentChart: null,
       keywordCloud: null,
       trendChart: null

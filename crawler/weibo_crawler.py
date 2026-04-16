@@ -41,7 +41,4 @@ class WeiboCrawler:
         df.to_csv(filename, index=False, encoding='utf-8-sig')
         print(f"已保存{len(comments)}条评论到{filename}")
 
-if __name__ == '__main__':
-    crawler = WeiboCrawler()
-    comments = crawler.crawl_comments('产品质量', pages=3)
-    crawler.save_comments(comments, 'weibo_comments.csv')
+
