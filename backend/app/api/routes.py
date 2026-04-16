@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import json
+import os
+from crawler.weibo_crawler import WeiboCrawler
 
 router = APIRouter()
 
@@ -77,10 +79,33 @@ def create_task(task: TaskCreate):
         "id": len(tasks) + 1,
         "keyword": task.keyword,
         "platform": task.platform,
-        "status": "pending",
+        "status": "running",
         "collected_count": 0,
         "analyzed_count": 0
     }
+    
+    # 如果是微博平台，使用cookie调用爬虫
+    if task.platform == "微博":
+        # 从环境变量获取微博cookie
+        weibo_cookie = os.getenv("WEIBO_COOKIE")
+        cookie_dict = {}
+        
+        # 解析cookie字符串为字典
+        if weibo_cookie:
+            cookie_pairs = weibo_cookie.split('; ')
+            for pair in cookie_pairs:
+                if '=' in pair:
+                    key, value = pair.split('=', 1)
+                    cookie_dict[key] = value
+        
+        # 创建爬虫实例并爬取评论
+        crawler = WeiboCrawler(cookie=cookie_dict)
+        comments_list = crawler.crawl_comments(task.keyword, pages=3)
+        
+        # 更新任务状态和统计信息
+        new_task["collected_count"] = len(comments_list)
+        new_task["status"] = "completed"
+    
     tasks.append(new_task)
     return new_task
 
